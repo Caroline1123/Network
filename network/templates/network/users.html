@@ -1,0 +1,48 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+    <h1>{{profile_user.username}}</h1>
+    <div class="my-3">
+        <div class="d-inline p-2 bg-primary-subtle text-emphasis-primary rounded">{{followers}} Follower(s)</div>
+        <div class="d-inline p-2 bg-primary-subtle text-emphasis-primary rounded">{{following}} Following</div>
+    </div>
+    {% if request.user.is_authenticated and request.user != profile_user %}
+        {% if not is_following %}
+            <a class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" href="{% url 'follow' profile_user.id %}">Follow</a>
+        {% else %}
+            <a class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" href="{% url 'unfollow' profile_user.id %}">Unfollow</a>
+        {% endif %}
+    {% endif %}
+    {% for post in page_obj %}
+    <div id = post-details>
+        <div class="username">{{ post.user.username}}</div>
+        {% if request.user == post.user %}
+        <p id="editMode" class="text-primary d-inline" data-bs-toggle="modal" data-bs-target="#EditModal{{post.id}}">
+            Edit
+        </p>
+        {% include "network/edit_modal.html" %}
+        {% endif %}
+        <div class="text">{{ post.text|linebreaks}}</div>
+        <div class="timestamp">{{ post.timestamp}}</div>
+        <div class="likes">&#10084; 
+            <div id="like_count{{post.id}}" class="d-inline">
+                {{ post.likes.count }}
+            </div>
+            {% if request.user != post.user %}
+                {% if post.id in post_liked %}
+                    <p class="d-inline px-4" id="like{{post.id}}" onclick="updateLikes({{post.id}},{{post_likes}})">
+                        <img src="{% static '/images/thumbs-down.png' %}" class="thumbs">
+                    </p>
+                {% else %}
+                    <p class="d-inline px-4" id="like{{post.id}}" onclick="updateLikes({{post.id}},{{post_likes}})">
+                        <img src="{% static '/images/thumbs-up.png' %}" class="thumbs">
+                    </p>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    {% include "network/edit_modal.html" %}
+    {% include "network/pagination.html" %}
+{% endblock %}
